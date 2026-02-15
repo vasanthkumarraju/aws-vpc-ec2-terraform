@@ -1,0 +1,29 @@
+name: Terraform Destroy (DEV)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-south-1
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init (DEV)
+        run: terraform -chdir=terraform init \
+          -backend-config="key=dev/terraform.tfstate"
+
+      - name: Terraform Destroy
+        run: terraform -chdir=terraform destroy -auto-approve
